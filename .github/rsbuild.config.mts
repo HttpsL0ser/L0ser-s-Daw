@@ -1,0 +1,54 @@
+import type { RsbuildConfig, EnvironmentConfig } from "@rsbuild/core";
+import { env } from "node:process";
+
+const isOfflineBuild = process.env.OFFLINE_BUILD;
+
+export default {
+  environments: {
+    editor: {
+      source: { entry: { index: "./editor/main.ts" } },
+      html: { template: "website/index.html", title: "LaserBox" },
+      output: { distPath: "dist/", assetPrefix: "." },
+      tools: { rspack: { output: { filename: "beepbox_editor.min.js" } } },
+    },
+    player: {
+      source: { entry: { index: "./player/main.ts" } },
+      html: {
+        template: "website/player/index.html",
+        title: "LaserBox Song Player",
+      },
+      output: { distPath: "dist/player/", assetPrefix: "." },
+      tools: { rspack: { output: { filename: "beepbox_player.min.js" } } },
+    },
+    synth: {
+      source: { entry: { index: "./synth/synth.ts" } },
+      output: { distPath: "dist/", assetPrefix: "." },
+      tools: {
+        htmlPlugin: false,
+        rspack: { output: { filename: "beepbox_synth.min.js" } },
+      },
+    },
+  },
+  source: {
+    define: {
+      OFFLINE: isOfflineBuild,
+      DO_ALERTS: !!process.env.DO_ALERTS
+    },
+  },
+  splitChunks: false,
+  dev: {
+    hmr: false,
+  },
+  tools: {
+    swc: { jsc: { loose: true } },
+      rspack: {
+        output: { library: "beepbox" },
+        watchOptions: { aggregateTimeout: 100 },
+      },
+  },
+  server: {
+    port: 5559,
+    publicDir: { name: "website" },
+    htmlFallback: false,
+  },
+} satisfies RsbuildConfig;
